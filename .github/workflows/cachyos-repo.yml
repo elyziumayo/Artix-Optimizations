@@ -1,0 +1,46 @@
+name: Sync zlib-ng Folder from CachyOS Repo
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour, adjust as needed
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup sparse-checkout to fetch only the zlib-ng folder
+        run: |
+          git config core.sparseCheckout true
+          echo "zlib-ng/*" >> .git/info/sparse-checkout
+          git clone --filter=blob:none --no-checkout https://github.com/CachyOS/CachyOS-PKGBUILDS.git temp-repo
+          cd temp-repo
+          git checkout master
+
+      - name: Sync zlib-ng folder to your repo
+        run: |
+          # Sync the zlib-ng folder to your target folder in your repo (artix_V3)
+          rsync -av --delete temp-repo/zlib-ng/ ./zlib-ng/
+
+      - name: Clean up temporary repository clone
+        run: |
+          rm -rf temp-repo
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
+          # Add and commit changes
+          git add .
+          git commit -m "Synced zlib-ng folder from CachyOS-PKGBUILDS" || echo "No changes"
+          
+          # Push the changes to your repo (artix_V3)
+          git push origin main

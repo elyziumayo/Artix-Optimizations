@@ -1,0 +1,100 @@
+### CachyOS PKGBUILD Maintainers:
+# Maintainer: Eric Naim <dnaim@cachyos.org>
+# Maintainer: Peter Jung <admin@ptr1337.dev>
+
+
+pkgname=(
+  lib32-zlib-ng
+  lib32-zlib-ng-compat
+)
+pkgver=2.2.2
+pkgrel=3
+pkgdesc='zlib replacement with optimizations for next generation systems - 32-bit'
+url='https://github.com/zlib-ng/zlib-ng'
+arch=('x86_64')
+license=('custom:zlib')
+depends=(
+  lib32-glibc
+)
+makedepends=(
+  cmake
+  ninja
+  lib32-gcc-libs
+)
+source=("${url}/archive/refs/tags/$pkgver/zlib-ng-${pkgver}.tar.gz")
+sha256sums=('fcb41dd59a3f17002aeb1bb21f04696c9b721404890bb945c5ab39d2cb69654c')
+b2sums=('970260f44fcce467933bf0038afa0f6e18cc007012c7d9be0b259d407e981fa1a353ce4c7aae38e5158ba65c79c5b54777f1cc436654016c5a21d20630061890')
+
+
+build() {
+  cd "zlib-ng-${pkgver}"
+
+
+  ## Build for 32-bit
+  export CFLAGS+=" -m32 -fno-semantic-interposition"
+  export CXXFLAGS+=" -m32 -fno-semantic-interposition"
+  export LDFLAGS+=" -m32"
+  export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
+
+	# WITH_UNALIGNED - unaligned access invokes undefined behaviour,
+	#   see https://github.com/gentoo/gentoo/pull/17167 for more info.
+  local _options=(
+    -G Ninja
+    -DCMAKE_BUILD_TYPE=None
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_INSTALL_LIBDIR=lib32
+    -Wno-dev
+    -DWITH_GTEST=OFF
+    -DWITH_UNALIGNED=OFF
+  )
+
+  msg2 "Building zlib-ng"
+  cmake -B build \
+    "${_options[@]}"
+  cmake --build build
+
+  msg2 "Building zlib-ng-compat"
+  cmake -B build-compat \
+    "${_options[@]}" \
+    -DZLIB_COMPAT=ON
+  cmake --build build-compat
+}
+
+check() {
+  cd "zlib-ng-${pkgver}"
+  msg2 "Checking zlib-ng"
+  ctest --output-on-failure --test-dir build
+  msg2 "Checking zlib-ng-compat"
+  ctest --output-on-failure --test-dir build-compat
+}
+
+package_lib32-zlib-ng() {
+  provides=('libz-ng.so')
+  depends=(zlib-ng=$pkgver)
+
+
+  cd "zlib-ng-${pkgver}"
+  DESTDIR="${pkgdir}" cmake --install build
+  install -Dm 644 LICENSE.md -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+
+  rm -rf "$pkgdir"/usr/include
+}
+
+package_lib32-zlib-ng-compat() {
+  pkgdesc+=" (zlib compat)"
+  provides=('lib32-zlib' 'libz.so')
+  depends=(zlib-ng-compat=$pkgver lib32-zlib-ng)
+  conflicts=('lib32-zlib')
+  replaces=('lib32-zlib')
+  options=('staticlibs')
+
+  cd "zlib-ng-${pkgver}"
+  DESTDIR="${pkgdir}" cmake --install build-compat
+  install -Dm 644 LICENSE.md -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+
+  rm -rf "$pkgdir"/usr/include
+}
+
+# vim: ts=2 sw=2 et:

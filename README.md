@@ -1,3 +1,3 @@
 # Things to do before using
 
-°Make sure to use this file in order to optimize the packages according to you cpu
+°Make sure to use .makepkg.conf file in order to optimize the packages according to you cpu

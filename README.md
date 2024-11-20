@@ -9,4 +9,4 @@
 Because i wanted to 
 
 # How
-This project was created first in bash but after knowing its limitations i decided to port it to python there are still many irregularities but it wont with packges having limited dependencies 
+This project was created first in bash but after knowing its limitations i decided to port it to python there are still many irregularities but it wonk with packges having limited dependencies 

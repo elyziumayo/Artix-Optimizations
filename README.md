@@ -8,5 +8,5 @@
 # Why 
 Because i wanted to 
 
-# when 
-This project is created first in bash but after knowing its limitations i decided to port it to python there are still many irregularities but it wont with packges having limited dependencies 
+# How
+This project was created first in bash but after knowing its limitations i decided to port it to python there are still many irregularities but it wont with packges having limited dependencies 

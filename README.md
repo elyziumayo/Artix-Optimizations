@@ -20,3 +20,16 @@ but when it come to core pkg artix maintains it own pkg that donot need systemd 
 
 ## Suggestion 
 If anyone has anyone knows  how we can achieve such automation like aur on Artix plz tellme 😁.
+
+## script current status 
+
+- working on handling of recursive dependency
+
+## Slow 
+
+I am slow as sloth in working on this project so i myself dont   know when i will complete this.
+
+## Reason script is not here 
+
+because it is pretty messed up for now 
+

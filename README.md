@@ -19,7 +19,7 @@ pkg from source like u do with AUR i know we can use AUR on artix
 but when it come to core pkg artix maintains it own pkg that donot need systemd stuff 
 
 ## Suggestion 
-If anyone has anyone knows  how we can achieve such automation like aur on Artix plz tellme 😁.
+If anyone knows how we can achieve such automation like aur on Artix plz tellme 😁.
 
 ## script current status 
 
@@ -32,4 +32,3 @@ I am slow as sloth in working on this project so i myself dont   know when i wil
 ## Reason script is not here 
 
 because it is pretty messed up for now 
-

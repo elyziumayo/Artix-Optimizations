@@ -1,61 +1,53 @@
 CFLAGS="-march=native -mtune=native -O3 -pipe \
         -fno-plt -fexceptions -fopenmp \
-        -falign-functions=64 -falign-loops=32 -falign-jumps=32 \
-        -fno-math-errno -fno-trapping-math -fomit-frame-pointer \
-        -fstack-clash-protection -fPIC -Wp,-D_FORTIFY_SOURCE=3 \
+        -falign-functions=64 -fno-math-errno -fno-trapping-math \
+        -fomit-frame-pointer -fstack-clash-protection \
+        -fPIC -Wp,-D_FORTIFY_SOURCE=3 \
         -fno-semantic-interposition -fgraphite-identity -floop-nest-optimize \
         -fdevirtualize-at-ltrans -fipa-pta -fipa-cp-clone \
         -funsafe-math-optimizations -ffinite-math-only \
-        -fassociative-math -freciprocal-math -fno-signed-zeros \
-        -funroll-loops -funroll-all-loops -fpeel-loops \
-        -flto -fuse-linker-plugin -ffat-lto-objects \
-        -fno-ident -ffast-math -fmodulo-sched -fmodulo-sched-allow-regmoves \
-        -fira-loop-pressure -fira-hoist-pressure \
+        -fassociative-math -freciprocal-math \
+        -funroll-loops -flto=auto -fuse-linker-plugin -fno-ident -ffast-math \
+        -ftracer -fprefetch-loop-arrays -ftree-loop-distribution \
         -ftree-loop-vectorize -ftree-slp-vectorize \
-        -fvect-cost-model=unlimited -ftree-loop-if-convert \
-        -ftracer -frename-registers -fweb \
-        -fprefetch-loop-arrays -fvariable-expansion-in-unroller \
-        -fmerge-all-constants -fno-stack-protector"
-
+        -fvect-cost-model=dynamic -fsimd-cost-model=dynamic \
+        -funswitch-loops -fpredictive-commoning \
+        -fgcse-after-reload -ftree-loop-im -fivopts \
+        -fmodulo-sched -fmodulo-sched-allow-regmoves \
+        -freschedule-modulo-scheduled-loops"
 CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS -fvisibility-inlines-hidden \
-          -fdevirtualize-speculatively"
-
+          -fdevirtualize-speculatively -fvirtual-function-elimination \
+          -fno-rtti-data"
 export CFLAGS_KERNEL="$CFLAGS -fno-stack-protector"
-export CXXFLAGS_KERNEL="$CXXFLAGS"
+export CXXFLAGS_KERNEL="$CXXFLAGS -fno-stack-protector"
 export CFLAGS_MODULE="$CFLAGS"
 export CXXFLAGS_MODULE="$CXXFLAGS"
-export KBUILD_CFLAGS="$CFLAGS"
+export KBUILD_CFLAGS="$CFLAGS -fno-stack-protector"
 export KCFLAGS="-O3 -march=native"
 export KCPPFLAGS="$KCFLAGS"
-
-LDFLAGS="-Wl,-O3,--sort-common,--as-needed,-z,relro,-z,now,--hash-style=gnu \
-         -Wl,--build-id=none -Wl,--gc-sections -Wl,--icf=all \
-         -Wl,-flto -Wl,--plugin-opt=-O3 -Wl,--plugin-opt=mcpu=native"
-
+LDFLAGS="-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now,--gc-sections \
+         -Wl,--icf=all -Wl,--strip-all -Wl,--hash-style=gnu \
+         -Wl,-z,pack-relative-relocs"
 RUSTFLAGS="-C opt-level=3 -C target-cpu=native -C codegen-units=1 -C lto=fat \
-           -C panic=abort -C overflow-checks=off -C debug-assertions=off \
-           -C link-arg=-Wl,-O3 -C target-feature=+avx2,+bmi2,+fma,+popcnt,+lzcnt"
-
-MAKEFLAGS="-j$(($(nproc)*2)) -l$(($(nproc)*2))"
+           -C link-arg=-Wl,-O2 -C panic=abort -C embed-bitcode=yes \
+           -C force-frame-pointers=no"
+MAKEFLAGS="-j$(($(nproc)*2))"
 NINJAFLAGS="$MAKEFLAGS"
-
 export CC="gcc"
 export CXX="g++"
 export AR="gcc-ar"
 export NM="gcc-nm"
 export RANLIB="gcc-ranlib"
-
+export STRIP="strip"
 COMPRESSZST="zstd -q --rm -19 -T0 --ultra"
 COMPRESSZST_EXT=".zst"
+COMPRESSXZ="xz -q --rm -9 -T0"
+COMPRESSXZ_EXT=".xz"
+OPTIONS=(strip docs !libtool !staticlibs emptydirs zipman purge !debug lto)
+export MALLOC_MMAP_THRESHOLD_=131072
+export MALLOC_TRIM_THRESHOLD_=131072
+export MALLOC_TOP_PAD_=131072
+export MALLOC_MMAP_MAX_=65536
 
-OPTIONS=(strip !docs !libtool !staticlibs emptydirs zipman purge !debug lto)
-
-export CPPFLAGS="-DNDEBUG"
-export GOFLAGS="-buildmode=pie -trimpath -ldflags=-s -ldflags=-w"
-export LTO_JOBS=$(($(nproc)))
-export CARGO_PROFILE_RELEASE_LTO="fat"
-export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
-
-export OMP_NUM_THREADS=$(nproc)
-export OMP_SCHEDULE="static"
-export OMP_PROC_BIND="true"
+ulimit -v unlimited
+ulimit -m unlimited
